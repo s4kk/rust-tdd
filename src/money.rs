@@ -8,9 +8,9 @@ impl Dollar {
         Self { amount }
     }
 
-    fn times(&self, times: usize) -> Self {
+    fn times(&self, times: u64) -> Self {
         Self {
-            amount: self.amount * times as u64,
+            amount: self.amount * times,
         }
     }
 }
@@ -28,10 +28,8 @@ mod tests {
     #[test]
     fn test_multiplication() {
         let five = Dollar::from_amount(5);
-        let product = five.times(2);
-        assert_eq!(10, product.amount);
-        let product = five.times(3);
-        assert_eq!(15, product.amount);
+        assert_eq!(Dollar::from_amount(10), five.times(2));
+        assert_eq!(Dollar::from_amount(15), five.times(3));
     }
 
     #[test]
