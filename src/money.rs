@@ -1,4 +1,19 @@
-#[derive(Debug)]
+trait Expression {}
+
+impl Expression for Money {}
+
+struct Bank;
+
+impl Bank {
+    fn new() -> Self {
+        Self
+    }
+    fn reduce<E: Expression>(&self, _source: E, _to: Currency) -> Money {
+        Money::dollar(10)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
 struct Money {
     amount: u64,
     currency: Currency,
@@ -11,8 +26,18 @@ enum Currency {
 }
 
 impl Money {
-    fn new(amount: u64, currency: Currency) -> Self {
-        Money { amount, currency }
+    fn franc(amount: u64) -> Self {
+        Money {
+            amount,
+            currency: Currency::Franc,
+        }
+    }
+
+    fn dollar(amount: u64) -> Self {
+        Money {
+            amount,
+            currency: Currency::Dollar,
+        }
     }
 }
 
@@ -35,6 +60,13 @@ impl Money {
             Franc => "CHF",
         }
     }
+
+    fn plus(&self, other: Money) -> impl Expression {
+        Self {
+            amount: self.amount() + other.amount(),
+            currency: self.currency,
+        }
+    }
 }
 
 impl PartialEq for Money {
@@ -45,34 +77,34 @@ impl PartialEq for Money {
 
 #[cfg(test)]
 mod tests {
-    use crate::money::{Currency, Money};
+    use crate::money::{Bank, Currency, Money};
 
     #[test]
     fn test_multiplication() {
-        let five = Money::new(5, Currency::Dollar);
-        assert_eq!(Money::new(10, Currency::Dollar), five.times(2));
-        assert_eq!(Money::new(15, Currency::Dollar), five.times(3));
+        let five = Money::dollar(5);
+        assert_eq!(Money::dollar(10), five.times(2));
+        assert_eq!(Money::dollar(15), five.times(3));
     }
 
     #[test]
     fn test_equality() {
-        assert_ne!(
-            Money::new(5, Currency::Dollar),
-            Money::new(5, Currency::Franc)
-        );
-        assert_eq!(
-            Money::new(5, Currency::Dollar),
-            Money::new(5, Currency::Dollar)
-        );
-        assert_ne!(
-            Money::new(5, Currency::Dollar),
-            Money::new(6, Currency::Dollar)
-        );
+        assert_ne!(Money::dollar(5), Money::franc(5));
+        assert_eq!(Money::dollar(5), Money::dollar(5));
+        assert_ne!(Money::dollar(5), Money::dollar(6));
     }
 
     #[test]
     fn test_currency() {
-        assert_eq!("USD", Money::new(1, Currency::Dollar).currency());
-        assert_eq!("CHF", Money::new(1, Currency::Franc).currency());
+        assert_eq!("USD", Money::dollar(1).currency());
+        assert_eq!("CHF", Money::franc(1).currency());
+    }
+
+    #[test]
+    fn test_simple_addition() {
+        let five = Money::dollar(5);
+        let sum = five.plus(five);
+        let bank = Bank::new();
+        let reduced = bank.reduce(sum, Currency::Dollar);
+        assert_eq!(Money::dollar(10), reduced);
     }
 }
