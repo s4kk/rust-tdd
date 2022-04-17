@@ -1,3 +1,4 @@
+use crate::bank::Bank;
 use crate::expression::sum::Sum;
 use crate::expression::Expression;
 
@@ -7,7 +8,7 @@ pub(crate) struct Money {
     currency: Currency,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub(crate) enum Currency {
     Dollar,
     Franc,
@@ -51,8 +52,9 @@ impl Money {
         Sum::new(self, other)
     }
 
-    pub(crate) fn reduce(self, _to: Currency) -> Money {
-        self
+    pub(crate) fn reduce(self, bank: &Bank, to: Currency) -> Money {
+        let rate = bank.rate(self.currency, to);
+        Self::new(self.amount / rate, to)
     }
 }
 
@@ -62,10 +64,12 @@ impl PartialEq for Money {
     }
 }
 
+impl Eq for Money {}
+
 #[cfg(test)]
 mod tests {
     use crate::bank::Bank;
-    use crate::expression::sum::Sum;
+
     use crate::expression::Expression;
     use crate::money::{Currency, Money};
 
@@ -108,20 +112,5 @@ mod tests {
         };
         assert_eq!(five, sum.augend);
         assert_eq!(five, sum.addend);
-    }
-
-    #[test]
-    fn test_reduce_sum() {
-        let sum = Sum::new(Money::dollar(3), Money::dollar(4));
-        let bank = Bank::new();
-        let reduced = bank.reduce(sum, Currency::Dollar);
-        assert_eq!(Money::dollar(7), reduced);
-    }
-
-    #[test]
-    fn test_reduce_money() {
-        let bank = Bank::new();
-        let money = bank.reduce(Expression::Money(Money::dollar(5)), Currency::Dollar);
-        assert_eq!(money, Money::dollar(5));
     }
 }

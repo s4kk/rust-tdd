@@ -1,3 +1,4 @@
+use crate::bank::Bank;
 use crate::expression::Expression;
 use crate::money::{Currency, Money};
 
@@ -11,7 +12,10 @@ impl Sum {
         Expression::Sum(Self { augend, addend })
     }
 
-    pub(crate) fn reduce(&self, to: Currency) -> Money {
-        Money::new(self.augend.amount + self.addend.amount, to)
+    pub(crate) fn reduce(&self, bank: &Bank, to: Currency) -> Money {
+        Money::new(
+            self.augend.reduce(bank, to).amount + self.addend.reduce(bank, to).amount,
+            to,
+        )
     }
 }
