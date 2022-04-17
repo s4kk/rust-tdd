@@ -1,23 +1,17 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 struct Dollar {
     amount: u64,
 }
 
 impl Dollar {
-    fn from_amount(amount: u64) -> Self {
+    fn new(amount: u64) -> Self {
         Self { amount }
     }
 
-    fn times(&self, times: u64) -> Self {
+    fn times(&self, multiplier: u64) -> Self {
         Self {
-            amount: self.amount * times,
+            amount: self.amount * multiplier,
         }
-    }
-}
-
-impl PartialEq for Dollar {
-    fn eq(&self, other: &Self) -> bool {
-        self.amount == other.amount
     }
 }
 
@@ -27,14 +21,14 @@ mod tests {
 
     #[test]
     fn test_multiplication() {
-        let five = Dollar::from_amount(5);
-        assert_eq!(Dollar::from_amount(10), five.times(2));
-        assert_eq!(Dollar::from_amount(15), five.times(3));
+        let five = Dollar::new(5);
+        assert_eq!(Dollar::new(10), five.times(2));
+        assert_eq!(Dollar::new(15), five.times(3));
     }
 
     #[test]
     fn test_equality() {
-        assert_eq!(Dollar::from_amount(5), Dollar::from_amount(5));
-        assert_ne!(Dollar::from_amount(5), Dollar::from_amount(6));
+        assert_eq!(Dollar::new(5), Dollar::new(5));
+        assert_ne!(Dollar::new(5), Dollar::new(6));
     }
 }
