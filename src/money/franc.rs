@@ -1,8 +1,8 @@
-use crate::money::Money;
+use crate::money::MoneyTrait;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub(crate) struct Franc {
-    amount: u64,
+    pub(crate) amount: u64,
 }
 
 impl Franc {
@@ -11,11 +11,7 @@ impl Franc {
     }
 }
 
-impl Money for Franc {
-    fn amount(&self) -> u64 {
-        self.amount
-    }
-
+impl MoneyTrait for Franc {
     fn times(&self, multiplier: u64) -> Self {
         Self {
             amount: self.amount * multiplier,
@@ -26,18 +22,18 @@ impl Money for Franc {
 #[cfg(test)]
 mod tests {
     use crate::money::franc::Franc;
-    use crate::money::Money;
+    use crate::money::MoneyTrait;
 
     #[test]
     fn test_multiplication() {
         let five = Franc::new(5);
-        assert!(Franc::new(10).equals(five.times(2)));
-        assert!(Franc::new(15).equals(five.times(3)));
+        assert_eq!(Franc::new(10), five.times(2));
+        assert_eq!(Franc::new(15), five.times(3));
     }
 
     #[test]
     fn test_equality() {
-        assert!(Franc::new(5).equals(Franc::new(5)));
-        assert!(!Franc::new(5).equals(Franc::new(6)));
+        assert_eq!(Franc::new(5), Franc::new(5));
+        assert_ne!(Franc::new(5), Franc::new(6));
     }
 }

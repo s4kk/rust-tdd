@@ -1,8 +1,8 @@
-use crate::money::Money;
+use crate::money::MoneyTrait;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub(crate) struct Dollar {
-    amount: u64,
+    pub(crate) amount: u64,
 }
 
 impl Dollar {
@@ -11,11 +11,7 @@ impl Dollar {
     }
 }
 
-impl Money for Dollar {
-    fn amount(&self) -> u64 {
-        self.amount
-    }
-
+impl MoneyTrait for Dollar {
     fn times(&self, multiplier: u64) -> Self {
         Self {
             amount: self.amount * multiplier,
@@ -26,18 +22,18 @@ impl Money for Dollar {
 #[cfg(test)]
 mod tests {
     use crate::money::dollar::Dollar;
-    use crate::money::Money;
+    use crate::money::MoneyTrait;
 
     #[test]
     fn test_multiplication() {
         let five = Dollar::new(5);
-        assert!(Dollar::new(10).equals(five.times(2)));
-        assert!(Dollar::new(15).equals(five.times(3)));
+        assert_eq!(Dollar::new(10), five.times(2));
+        assert_eq!(Dollar::new(15), five.times(3));
     }
 
     #[test]
     fn test_equality() {
-        assert!(Dollar::new(5).equals(Dollar::new(5)));
-        assert!(!Dollar::new(5).equals(Dollar::new(6)));
+        assert_eq!(Dollar::new(5), Dollar::new(5));
+        assert_ne!(Dollar::new(5), Dollar::new(6));
     }
 }
