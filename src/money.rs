@@ -1,43 +1,29 @@
-trait Expression {}
-
-impl Expression for Money {}
-
-struct Bank;
-
-impl Bank {
-    fn new() -> Self {
-        Self
-    }
-    fn reduce<E: Expression>(&self, _source: E, _to: Currency) -> Money {
-        Money::dollar(10)
-    }
-}
+use crate::expression::sum::Sum;
+use crate::expression::Expression;
 
 #[derive(Debug, Clone, Copy)]
-struct Money {
-    amount: u64,
+pub(crate) struct Money {
+    pub(crate) amount: u64,
     currency: Currency,
 }
 
 #[derive(Debug, Clone, Copy)]
-enum Currency {
+pub(crate) enum Currency {
     Dollar,
     Franc,
 }
 
 impl Money {
-    fn franc(amount: u64) -> Self {
-        Money {
-            amount,
-            currency: Currency::Franc,
-        }
+    pub(crate) fn franc(amount: u64) -> Self {
+        Money::new(amount, Currency::Franc)
     }
 
-    fn dollar(amount: u64) -> Self {
-        Money {
-            amount,
-            currency: Currency::Dollar,
-        }
+    pub(crate) fn dollar(amount: u64) -> Self {
+        Self::new(amount, Currency::Dollar)
+    }
+
+    pub(crate) fn new(amount: u64, currency: Currency) -> Self {
+        Self { amount, currency }
     }
 }
 
@@ -61,11 +47,12 @@ impl Money {
         }
     }
 
-    fn plus(&self, other: Money) -> impl Expression {
-        Self {
-            amount: self.amount() + other.amount(),
-            currency: self.currency,
-        }
+    fn plus(self, other: Money) -> Expression {
+        Sum::new(self, other)
+    }
+
+    pub(crate) fn reduce(self, _to: Currency) -> Money {
+        self
     }
 }
 
@@ -77,7 +64,10 @@ impl PartialEq for Money {
 
 #[cfg(test)]
 mod tests {
-    use crate::money::{Bank, Currency, Money};
+    use crate::bank::Bank;
+    use crate::expression::sum::Sum;
+    use crate::expression::Expression;
+    use crate::money::{Currency, Money};
 
     #[test]
     fn test_multiplication() {
@@ -106,5 +96,32 @@ mod tests {
         let bank = Bank::new();
         let reduced = bank.reduce(sum, Currency::Dollar);
         assert_eq!(Money::dollar(10), reduced);
+    }
+
+    #[test]
+    fn test_plus_method_return_sum() {
+        let five = Money::dollar(5);
+        let expr = five.plus(five);
+        let sum = match expr {
+            Expression::Sum(sum) => sum,
+            _ => unreachable!(),
+        };
+        assert_eq!(five, sum.augend);
+        assert_eq!(five, sum.addend);
+    }
+
+    #[test]
+    fn test_reduce_sum() {
+        let sum = Sum::new(Money::dollar(3), Money::dollar(4));
+        let bank = Bank::new();
+        let reduced = bank.reduce(sum, Currency::Dollar);
+        assert_eq!(Money::dollar(7), reduced);
+    }
+
+    #[test]
+    fn test_reduce_money() {
+        let bank = Bank::new();
+        let money = bank.reduce(Expression::Money(Money::dollar(5)), Currency::Dollar);
+        assert_eq!(money, Money::dollar(5));
     }
 }
