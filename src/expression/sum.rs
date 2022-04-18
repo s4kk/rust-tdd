@@ -2,14 +2,15 @@ use crate::bank::Bank;
 use crate::expression::Expression;
 use crate::money::{Currency, Money};
 
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Sum {
-    pub(crate) augend: Money,
-    pub(crate) addend: Money,
+    pub(crate) augend: Expression,
+    pub(crate) addend: Expression,
 }
 
 impl Sum {
-    pub(crate) fn new(augend: Money, addend: Money) -> Expression {
-        Expression::Sum(Self { augend, addend })
+    pub(crate) fn new(augend: Expression, addend: Expression) -> Expression {
+        Expression::Sum(Box::new(Self { augend, addend }))
     }
 
     pub(crate) fn reduce(&self, bank: &Bank, to: Currency) -> Money {

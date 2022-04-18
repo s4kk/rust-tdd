@@ -31,7 +31,7 @@ impl Bank {
         unreachable!()
     }
 
-    pub(crate) fn addRate(&mut self, from: Currency, to: Currency, rate: u64) {
+    pub(crate) fn add_rate(&mut self, from: Currency, to: Currency, rate: u64) {
         self.0.insert(CurrencyPair { from, to }, rate);
     }
 }
@@ -40,7 +40,7 @@ impl Bank {
 mod tests {
     use crate::bank::Bank;
     use crate::expression::sum::Sum;
-    use crate::expression::Expression;
+
     use crate::money::{Currency, Money};
 
     #[test]
@@ -48,26 +48,36 @@ mod tests {
         let sum = Sum::new(Money::dollar(3), Money::dollar(4));
         let bank = Bank::new();
         let reduced = bank.reduce(sum, Currency::Dollar);
-        assert_eq!(Money::dollar(7), reduced);
+        assert_eq!(Money::new(7, Currency::Dollar), reduced);
     }
 
     #[test]
     fn test_reduce_money() {
         let bank = Bank::new();
-        let money = bank.reduce(Expression::Money(Money::dollar(5)), Currency::Dollar);
-        assert_eq!(money, Money::dollar(5));
+        let money = bank.reduce(Money::dollar(5), Currency::Dollar);
+        assert_eq!(Money::new(5, Currency::Dollar), money);
     }
 
     #[test]
     fn test_reduce_money_different_currency() {
         let mut bank = Bank::new();
-        bank.addRate(Currency::Franc, Currency::Dollar, 2);
-        let money = bank.reduce(Expression::Money(Money::franc(2)), Currency::Dollar);
-        assert_eq!(Money::dollar(1), money);
+        bank.add_rate(Currency::Franc, Currency::Dollar, 2);
+        let money = bank.reduce(Money::franc(2), Currency::Dollar);
+        assert_eq!(Money::new(1, Currency::Dollar), money);
     }
 
     #[test]
     fn test_identity_rate() {
         assert_eq!(1, Bank::new().rate(Currency::Dollar, Currency::Dollar));
+    }
+
+    #[test]
+    fn test_mixed_addition() {
+        let five_bucks = Money::dollar(5);
+        let ten_franc = Money::franc(10);
+        let mut bank = Bank::new();
+        bank.add_rate(Currency::Franc, Currency::Dollar, 2);
+        let result = bank.reduce(five_bucks.plus(ten_franc), Currency::Dollar);
+        assert_eq!(Money::new(10, Currency::Dollar), result);
     }
 }

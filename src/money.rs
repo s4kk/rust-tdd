@@ -5,7 +5,7 @@ use crate::expression::Expression;
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct Money {
     pub(crate) amount: u64,
-    currency: Currency,
+    pub(crate) currency: Currency,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
@@ -15,12 +15,12 @@ pub(crate) enum Currency {
 }
 
 impl Money {
-    pub(crate) fn franc(amount: u64) -> Self {
-        Money::new(amount, Currency::Franc)
+    pub(crate) fn franc(amount: u64) -> Expression {
+        Expression::Money(Self::new(amount, Currency::Franc))
     }
 
-    pub(crate) fn dollar(amount: u64) -> Self {
-        Self::new(amount, Currency::Dollar)
+    pub(crate) fn dollar(amount: u64) -> Expression {
+        Expression::Money(Self::new(amount, Currency::Dollar))
     }
 
     pub(crate) fn new(amount: u64, currency: Currency) -> Self {
@@ -33,14 +33,14 @@ impl Money {
         self.amount
     }
 
-    fn times(&self, multiplier: u64) -> Self {
-        Self {
+    pub(crate) fn times(&self, multiplier: u64) -> Expression {
+        Expression::Money(Self {
             amount: self.amount * multiplier,
             currency: self.currency,
-        }
+        })
     }
 
-    fn currency(&self) -> &'static str {
+    pub(crate) fn currency(&self) -> &'static str {
         use Currency::*;
         match self.currency {
             Dollar => "USD",
@@ -48,8 +48,8 @@ impl Money {
         }
     }
 
-    fn plus(self, other: Money) -> Expression {
-        Sum::new(self, other)
+    pub(crate) fn plus(self, other: Expression) -> Expression {
+        Sum::new(Expression::Money(self), other)
     }
 
     pub(crate) fn reduce(self, bank: &Bank, to: Currency) -> Money {
@@ -96,16 +96,16 @@ mod tests {
     #[test]
     fn test_simple_addition() {
         let five = Money::dollar(5);
-        let sum = five.plus(five);
+        let sum = five.plus(five.clone());
         let bank = Bank::new();
         let reduced = bank.reduce(sum, Currency::Dollar);
-        assert_eq!(Money::dollar(10), reduced);
+        assert_eq!(Money::new(10, Currency::Dollar), reduced);
     }
 
     #[test]
     fn test_plus_method_return_sum() {
         let five = Money::dollar(5);
-        let expr = five.plus(five);
+        let expr = five.plus(five.clone());
         let sum = match expr {
             Expression::Sum(sum) => sum,
             _ => unreachable!(),
