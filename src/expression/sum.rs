@@ -9,6 +9,7 @@ pub struct Sum {
 }
 
 impl Sum {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(augend: Expression, addend: Expression) -> Expression {
         Expression::Sum(Box::new(Self { augend, addend }))
     }

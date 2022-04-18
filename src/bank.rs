@@ -89,7 +89,7 @@ mod tests {
         let ten_francs = Money::franc(10);
         let mut bank = Bank::new();
         bank.add_rate(Currency::Franc, Currency::Dollar, 2);
-        let sum = Sum::new(five_bucks.clone(), ten_francs).plus(five_bucks.clone());
+        let sum = Sum::new(five_bucks.clone(), ten_francs).plus(five_bucks);
         let result = bank.reduce(sum, Currency::Dollar);
         assert_eq!(Money::new(15, Currency::Dollar), result);
     }
@@ -100,7 +100,7 @@ mod tests {
         let ten_francs = Money::franc(10);
         let mut bank = Bank::new();
         bank.add_rate(Currency::Franc, Currency::Dollar, 2);
-        let sum = Sum::new(five_bucks.clone(), ten_francs).times(2);
+        let sum = Sum::new(five_bucks, ten_francs).times(2);
         let result = bank.reduce(sum, Currency::Dollar);
         assert_eq!(Money::new(20, Currency::Dollar), result);
     }
