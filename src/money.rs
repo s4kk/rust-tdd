@@ -1,29 +1,31 @@
+#![allow(dead_code)]
+
 use crate::bank::Bank;
 use crate::expression::sum::Sum;
 use crate::expression::Expression;
 
 #[derive(Debug, Clone, Copy)]
-pub(crate) struct Money {
-    pub(crate) amount: u64,
-    pub(crate) currency: Currency,
+pub struct Money {
+    pub amount: u64,
+    pub currency: Currency,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
-pub(crate) enum Currency {
+pub enum Currency {
     Dollar,
     Franc,
 }
 
 impl Money {
-    pub(crate) fn franc(amount: u64) -> Expression {
+    pub fn franc(amount: u64) -> Expression {
         Expression::Money(Self::new(amount, Currency::Franc))
     }
 
-    pub(crate) fn dollar(amount: u64) -> Expression {
+    pub fn dollar(amount: u64) -> Expression {
         Expression::Money(Self::new(amount, Currency::Dollar))
     }
 
-    pub(crate) fn new(amount: u64, currency: Currency) -> Self {
+    pub fn new(amount: u64, currency: Currency) -> Self {
         Self { amount, currency }
     }
 }
@@ -33,14 +35,14 @@ impl Money {
         self.amount
     }
 
-    pub(crate) fn times(&self, multiplier: u64) -> Expression {
+    pub fn times(&self, multiplier: u64) -> Expression {
         Expression::Money(Self {
             amount: self.amount * multiplier,
             currency: self.currency,
         })
     }
 
-    pub(crate) fn currency(&self) -> &'static str {
+    pub fn currency(&self) -> &'static str {
         use Currency::*;
         match self.currency {
             Dollar => "USD",
@@ -48,11 +50,11 @@ impl Money {
         }
     }
 
-    pub(crate) fn plus(self, other: Expression) -> Expression {
+    pub fn plus(self, other: Expression) -> Expression {
         Sum::new(Expression::Money(self), other)
     }
 
-    pub(crate) fn reduce(self, bank: &Bank, to: Currency) -> Money {
+    pub fn reduce(self, bank: &Bank, to: Currency) -> Money {
         let rate = bank.rate(self.currency, to);
         Self::new(self.amount / rate, to)
     }
